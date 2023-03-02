@@ -8,17 +8,53 @@ class Channel:
     def __init__(self, channel_id):
         """
         Инициализирует
-        айдишник (id) конкретного
-        ютуб-канала
+        атрибуты класса по id канала
         """
-        self.channel_id = channel_id
+        self.__channel_id = channel_id
+        info = self.print_info()
+        self.item = json.loads(info)
+        self.name_channel = self.item['items'][0]['snippet']['title']
+        self.description = self.item['items'][0]['snippet']['description']
+        self.channel_link = "//www.youtube.com/channel/" + self.item['items'][0]['id']
+        self.subscribers = self.item['items'][0]['statistics']['subscriberCount']
+        self.video_count = self.item['items'][0]['statistics']['videoCount']
+        self.total_views = self.item['items'][0]['statistics']['viewCount']
+
+    @property
+    def channel_id(self) -> str:
+        return self.__channel_id
+
+    def get_service(self):
+        """
+        Возвращает объект
+        для работы с API ютуба
+        """
+        api_key: str = os.getenv('api_key')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        return youtube
 
     def print_info(self):
         """
         Выводит в консоль
         информацию о канале
         """
-        api_key: str = os.getenv('api_key')
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        channel = youtube.channels().list(id=self.channel_id, part='snippet,statistics').execute()
+        channel = self.get_service().channels().list(id=self.channel_id, part='snippet,statistics').execute()
         return json.dumps(channel, indent=2, ensure_ascii=False)
+
+    def to_json(self, name_file):
+        """
+        Сохраняет информацию
+        по каналу,
+        хранящуюся в атрибутах
+        экземпляра класса
+        """
+        data = {
+            "title": self.name_channel,
+            "description": self.description,
+            "url": self.channel_link,
+            "subscriberCount": self.subscribers,
+            "videoCount": self.video_count,
+            "viewCount": self.total_views
+        }
+        with open("filename.json", "w", encoding="UTF-8") as name_file:
+            json.dump(data, name_file, indent=2, ensure_ascii=False)
