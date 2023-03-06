@@ -20,6 +20,34 @@ class Channel:
         self.video_count = self.item['items'][0]['statistics']['videoCount']
         self.total_views = self.item['items'][0]['statistics']['viewCount']
 
+    def __str__(self):
+        return f'Youtube-канал: {self.name_channel}'
+
+    def __add__(self, other):
+        """
+        Складывает количество
+        подписчиков
+        """
+        return int(self.subscribers) + int(other.subscribers)
+
+    def __lt__(self, other):
+        """
+        Сравнивает количество
+        подписчиков
+        """
+        if int(self.subscribers) < int(other.subscribers):
+            return True
+        return False
+
+    def __gt__(self, other):
+        """
+        Сравнивает количество
+        подписчиков
+        """
+        if int(self.subscribers) > int(other.subscribers):
+            return True
+        return False
+
     @property
     def channel_id(self) -> str:
         return self.__channel_id
