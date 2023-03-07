@@ -14,6 +14,13 @@ def channel_2():
     return channel_2
 
 
+@pytest.fixture()
+def file():
+    channel = Channel('UCMCgOm8GZkHp8zJ6l7_hIuA')
+    file = channel.to_json('file')
+    return file
+
+
 def test_str(channel_1):
     """
     Тест
@@ -44,3 +51,18 @@ def test_gt(channel_1, channel_2):
     __gt__
     """
     assert channel_1.__gt__(channel_2) is True
+
+
+def test_print(capsys):
+    print('Test print')
+    captured = capsys.readouterr()
+    assert captured.out == 'Test print\n'
+
+
+def test_to_json():
+    with open("filename.json", encoding="UTF-8") as name_file:
+        operations = json.load(name_file)
+        for value in operations.values():
+            assert value in ["вДудь", "Здесь задают вопросы",
+                             "//www.youtube.com/channel/UCMCgOm8GZkHp8zJ6l7_hIuA",
+                             "10300000", "165", "1962244295"]
