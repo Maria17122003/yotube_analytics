@@ -93,7 +93,7 @@ class Video:
     def __init__(self, video_id):
         """
         Инициализирует
-        атрибуты класса по id канала
+        атрибуты класса по id видео
         """
         self.video_id = video_id
         api_key: str = os.getenv('api_key')
@@ -109,7 +109,8 @@ class PLVideo(Video):
     def __init__(self, video_id, playlist_id):
         """
         Инициализирует
-        атрибуты класса по id канала
+        атрибуты класса по id видео 
+        и плейлиста
         """
         super().__init__(video_id)
         api_key: str = os.getenv('api_key')
