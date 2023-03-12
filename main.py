@@ -86,3 +86,37 @@ class Channel:
         }
         with open("filename.json", "w", encoding="UTF-8") as name_file:
             json.dump(data, name_file, indent=2, ensure_ascii=False)
+
+
+class Video:
+
+    def __init__(self, video_id):
+        """
+        Инициализирует
+        атрибуты класса по id канала
+        """
+        self.video_id = video_id
+        api_key: str = os.getenv('api_key')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        self.video = youtube.videos().list(id=video_id, part='snippet').execute()
+        self.video_name = self.video['items'][0]['snippet']['title']
+
+    def __str__(self):
+        return f'{self.video_name}'
+
+
+class PLVideo(Video):
+    def __init__(self, video_id, playlist_id):
+        """
+        Инициализирует
+        атрибуты класса по id канала
+        """
+        super().__init__(video_id)
+        api_key: str = os.getenv('api_key')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        self.playlist_id = playlist_id
+        self.playlist = youtube.playlists().list(id=playlist_id, part='contentDetails,snippet', maxResults=50).execute()
+        self.playlist_name = self.playlist['items'][0]['snippet']['title']
+
+    def __str__(self):
+        return f'{self.video_name} ({self.playlist_name})'

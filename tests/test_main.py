@@ -21,12 +21,26 @@ def file():
     return file
 
 
-def test_str(channel_1):
+@pytest.fixture()
+def video1():
+    video1 = Video('9lO06Zxhu88')
+    return video1
+
+
+@pytest.fixture()
+def video2():
+    video2 = PLVideo('BBotskuyw_M', 'PL7Ntiz7eTKwrqmApjln9u4ItzhDLRtPuD')
+    return video2
+
+
+def test_str(channel_1, video1, video2):
     """
     Тест
     __str__
     """
     assert str(channel_1) == 'Youtube-канал: вДудь'
+    assert str(video1) == 'Как устроена IT-столица мира / Russian Silicon Valley (English subs)'
+    assert str(video2) == 'Пушкин: наше все? (Литература)'
 
 
 def test_add(channel_1, channel_2):
