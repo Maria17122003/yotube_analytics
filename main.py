@@ -1,6 +1,8 @@
 # Имппортируем необходимое библиотеки
 import os
 import json
+import datetime
+import isodate as isodate
 from googleapiclient.discovery import build
 
 
@@ -126,3 +128,53 @@ class PLVideo(Video):
 
     def __str__(self):
         return f'{self.video_name} ({self.playlist_name})'
+
+
+class PlayList:
+    def __init__(self, playlist_id):
+        """
+        """
+        self.playlist_id = playlist_id
+        api_key: str = os.getenv('api_key')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        self.playlist = youtube.playlists().list(id=playlist_id, part='snippet, contentDetails, status').execute()
+        self.playlist_videos = youtube.playlistItems().list(playlistId=playlist_id,
+                                                            part='contentDetails', maxResults=50
+                                                            ).execute()
+        self.video_ids: list[str] = [video['contentDetails']['videoId'] for video in self.playlist_videos['items']]
+        self.video_response = youtube.videos().list(part='contentDetails,statistics',
+                                                    id=','.join(self.video_ids)).execute()
+        self.playlist_name = self.playlist['items'][0]['snippet']['title']
+        self.url = "https://www.youtube.com/playlist?list=" + self.playlist_id
+
+    def __repr__(self) -> str:
+        return f"('PlayList ({self.playlist_id}))"
+
+    @property
+    def total_duration(self):
+        """
+        Возвращает суммарную
+        длительность плейлиста
+        """
+        total_duration = datetime.timedelta()
+
+        for video in self.video_response['items']:
+            iso_8601_duration = video['contentDetails']['duration']
+            duration = isodate.parse_duration(iso_8601_duration)
+            total_duration += duration
+
+        return total_duration
+
+    def show_best_video(self):
+        """
+        Возвращает ссылку на
+        самое популярное видео из плейлиста
+        (по количеству лайков)
+        """
+        likes = []
+        videos = {}
+
+        for video in range(len(self.video_ids)):
+            videos[self.video_response['items'][video]['statistics']['likeCount']] = self.video_ids[video]
+            likes.append(int(self.video_response['items'][video]['statistics']['likeCount']))
+        return f"//youtu.be/{videos[str(max(likes))]}"
