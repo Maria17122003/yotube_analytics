@@ -33,6 +33,12 @@ def video2():
     return video2
 
 
+@pytest.fixture()
+def playlist():
+    playlist = PlayList('PLguYHBi01DWr4bRWc4uaguASmo7lW4GCb')
+    return playlist
+
+
 def test_str(channel_1, video1, video2):
     """
     Тест
@@ -68,15 +74,39 @@ def test_gt(channel_1, channel_2):
 
 
 def test_print(capsys):
+    """
+    Тест
+    print_info
+    """
     print('Test print')
     captured = capsys.readouterr()
     assert captured.out == 'Test print\n'
 
 
 def test_to_json():
+    """
+    Тест
+    to_json
+    """
     with open("filename.json", encoding="UTF-8") as name_file:
         operations = json.load(name_file)
         for value in operations.values():
             assert value in ["вДудь", "Здесь задают вопросы",
                              "//www.youtube.com/channel/UCMCgOm8GZkHp8zJ6l7_hIuA",
                              "10300000", "165", "1962244295"]
+
+
+def test_total_duration(playlist):
+    """
+    Тест
+    total_duration
+    """
+    assert playlist.playlist_name == "Редакция. АнтиТревел"
+    assert playlist.url == "https://www.youtube.com/playlist?list=PLguYHBi01DWr4bRWc4uaguASmo7lW4GCb"
+    duration = playlist.total_duration
+    assert duration == datetime.timedelta(seconds=13261)
+    assert duration.total_seconds() == 13261.0
+
+
+def test_show_best_video(playlist):
+    assert playlist.show_best_video() == "//youtu.be/9Bv2zltQKQA"
