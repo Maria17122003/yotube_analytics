@@ -6,7 +6,18 @@ import isodate as isodate
 from googleapiclient.discovery import build
 
 
-class Channel:
+class Service:
+    def get_service(self):
+        """
+        Возвращает объект
+        для работы с API ютуба
+        """
+        api_key: str = os.getenv('api_key')
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        return youtube
+
+
+class Channel(Service):
     def __init__(self, channel_id):
         """
         Инициализирует
@@ -54,15 +65,6 @@ class Channel:
     def channel_id(self) -> str:
         return self.__channel_id
 
-    def get_service(self):
-        """
-        Возвращает объект
-        для работы с API ютуба
-        """
-        api_key: str = os.getenv('api_key')
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        return youtube
-
     def print_info(self):
         """
         Выводит в консоль
@@ -90,17 +92,14 @@ class Channel:
             json.dump(data, name_file, indent=2, ensure_ascii=False)
 
 
-class Video:
+class Video(Service):
 
     def __init__(self, video_id):
         """
         Инициализирует
         атрибуты класса по id видео
         """
-        self.video_id = video_id
-        api_key: str = os.getenv('api_key')
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        self.video = youtube.videos().list(part='snippet,statistics', id=video_id).execute()
+        self.video = self.get_service().videos().list(part='snippet,statistics', id=video_id).execute()
         self.video_name = self.video['items'][0]['snippet']['title']
         self.view_count = self.video['items'][0]['statistics']['viewCount']
         self.like_count = self.video['items'][0]['statistics']['likeCount']
@@ -117,10 +116,9 @@ class PLVideo(Video):
         и плейлиста
         """
         super().__init__(video_id)
-        api_key: str = os.getenv('api_key')
-        youtube = build('youtube', 'v3', developerKey=api_key)
         self.playlist_id = playlist_id
-        self.playlist = youtube.playlists().list(id=playlist_id, part='snippet, contentDetails, status').execute()
+        self.playlist = self.get_service().playlists().list(id=playlist_id,
+                                                            part='snippet, contentDetails, status').execute()
         self.playlist_name = self.playlist['items'][0]['snippet']['title']
         self.video_name = self.video['items'][0]['snippet']['title']
         self.view_count = self.video['items'][0]['statistics']['viewCount']
@@ -130,20 +128,19 @@ class PLVideo(Video):
         return f'{self.video_name} ({self.playlist_name})'
 
 
-class PlayList:
+class PlayList(Service):
     def __init__(self, playlist_id):
         """
         """
         self.playlist_id = playlist_id
-        api_key: str = os.getenv('api_key')
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        self.playlist = youtube.playlists().list(id=playlist_id, part='snippet, contentDetails, status').execute()
-        self.playlist_videos = youtube.playlistItems().list(playlistId=playlist_id,
-                                                            part='contentDetails', maxResults=50
-                                                            ).execute()
+        self.playlist = self.get_service().playlists().list(id=playlist_id,
+                                                            part='snippet, contentDetails, status').execute()
+        self.playlist_videos = self.get_service().playlistItems().list(playlistId=playlist_id,
+                                                                       part='contentDetails',
+                                                                       maxResults=50).execute()
         self.video_ids: list[str] = [video['contentDetails']['videoId'] for video in self.playlist_videos['items']]
-        self.video_response = youtube.videos().list(part='contentDetails,statistics',
-                                                    id=','.join(self.video_ids)).execute()
+        self.video_response = self.get_service().videos().list(part='contentDetails,statistics',
+                                                               id=','.join(self.video_ids)).execute()
         self.playlist_name = self.playlist['items'][0]['snippet']['title']
         self.url = "https://www.youtube.com/playlist?list=" + self.playlist_id
 
