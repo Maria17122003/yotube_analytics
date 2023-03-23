@@ -17,6 +17,16 @@ class Service:
         return youtube
 
 
+class YoutubeApiError(Exception):
+    """Класс-исключение для ошибок, связанных с ютубом"""
+
+    def __init__(self, *args):
+        self.message = args[0] if args else "Некорректное id видео"
+
+    def __str__(self):
+        return self.message
+
+
 class Channel(Service):
     def __init__(self, channel_id):
         """
@@ -97,12 +107,22 @@ class Video(Service):
     def __init__(self, video_id):
         """
         Инициализирует
-        атрибуты класса по id видео
+        атрибуты класса по id видео,
+        выдает исключение если
+        id неверный
         """
-        self.video = self.get_service().videos().list(part='snippet,statistics', id=video_id).execute()
-        self.video_name = self.video['items'][0]['snippet']['title']
-        self.view_count = self.video['items'][0]['statistics']['viewCount']
-        self.like_count = self.video['items'][0]['statistics']['likeCount']
+        try:
+            self.video = self.get_service().videos().list(part='snippet,statistics', id=video_id).execute()
+            if self.video['items']:
+                self.video_name = self.video['items'][0]['snippet']['title']
+                self.view_count = self.video['items'][0]['statistics']['viewCount']
+                self.like_count = self.video['items'][0]['statistics']['likeCount']
+            else:
+                self.video_name = None
+                self.view_count = None
+                self.like_count = None
+        except YoutubeApiError:
+            print('Некорректное id видео')
 
     def __str__(self):
         return f'{self.video_name}'
