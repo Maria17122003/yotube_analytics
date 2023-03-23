@@ -39,6 +39,12 @@ def playlist():
     return playlist
 
 
+@pytest.fixture()
+def broken_video():
+    broken_video = Video('broken_video_id')
+    return broken_video
+
+
 def test_str(channel_1, video1, video2):
     """
     Тест
@@ -109,4 +115,18 @@ def test_total_duration(playlist):
 
 
 def test_show_best_video(playlist):
+    """
+    Тест
+    show_best_video
+    """
     assert playlist.show_best_video() == "//youtu.be/9Bv2zltQKQA"
+
+
+def test_youtube_api_error(broken_video):
+    """
+    Тест
+    youtube_api_error
+    """
+    assert broken_video.video_name is None
+    assert broken_video.like_count is None
+    assert broken_video.view_count is None
